@@ -1,0 +1,32 @@
+{
+	"name": "@dumpstate/config",
+	"version": "0.1.0",
+	"description": "File/env configuration loader.",
+	"main": "index.js",
+	"scripts": {
+		"build": "tsc --project tsconfig.json",
+		"lint": "npm run style:check",
+		"prepublish": "npm run build",
+		"style:check": "prettier --check .",
+		"style:fix": "prettier --write .",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Albert Sadowski <asadowski@mailbox.org>",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/lodash": "^4.14.192",
+		"@types/node": "^18.15.11",
+		"ajv": "^8.12.0",
+		"lodash": "^4.17.21",
+		"prettier": "^2.8.7",
+		"typescript": "^5.0.3"
+	},
+	"peerDependencies": {
+		"ajv": "8.x",
+		"lodash": "4.x"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com/",
+		"access": "public"
+	}
+}
