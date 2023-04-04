@@ -1,45 +1,65 @@
 import fs from "fs"
 import path from "path"
 
-import { camelCase, merge, set } from "lodash"
+import { camelCase, get, isEmpty, merge, set, upperCase } from "lodash"
 import Ajv, { AnySchema, JTDDataType } from "ajv/dist/jtd"
 
 const DEFAULT_SEPARATOR = "__"
 const DEFAULT_CONFIG_DIR = "config"
 
 interface EnvLoaderOpts {
-	readonly appName: string
+	readonly appName?: string
 	readonly separator?: string
 }
 
-export function envLoader(opts: EnvLoaderOpts) {
-	const { appName } = opts
-	if (appName.length === 0) {
-		throw new Error(`Invalid application name: ${appName}`)
-	}
+export function envLoader(opts: EnvLoaderOpts | null = null): () => any {
+	function getValue(value: any) {
+		if (value === "true") {
+			return true
+		}
+		if (value === "false") {
+			return false
+		}
 
-	let { separator } = opts
-	if (!separator) {
-		separator = DEFAULT_SEPARATOR
-	}
+		const parsed = parseInt(value)
+		if (!isNaN(parsed)) {
+			return parsed
+		}
 
-	const appPrefix = appName.toUpperCase()
-	const regex = new RegExp(`^${appPrefix}${separator}`, "g")
+		return value
+	}
 
 	return () => {
-		const appKeys = Object.keys(process.env)
-			.filter((key) => key.startsWith(`${appPrefix}${separator}`))
-			.map((key) => [
-				key
-					.replace(regex, "")
-					.split(separator as string)
-					.map(camelCase)
-					.join("."),
-				process.env[key],
-			])
-			.reduce((acc, [key, value]) => set(acc, key as string, value), {})
+		let appKeys = {}
 
-		set(appKeys, "env", process.env["NODE_ENV"])
+		if (!isEmpty(get(opts, "appName"))) {
+			const appPrefix = get(opts, "appName", "")
+				.split("-")
+				.map(upperCase)
+				.join("_")
+			const separator = get(opts, "separator", DEFAULT_SEPARATOR)
+			const regex = new RegExp(`^${appPrefix}${separator}`, "g")
+
+			appKeys = Object.keys(process.env)
+				.filter((key) => key.startsWith(`${appPrefix}${separator}`))
+				.map((key) => [
+					key
+						.replace(regex, "")
+						.split(separator)
+						.map(camelCase)
+						.join("."),
+					process.env[key],
+				])
+				.reduce(
+					(acc, [key, value]) =>
+						set(acc, key as string, getValue(value)),
+					{}
+				)
+		}
+
+		if (process.env["NODE_ENV"]) {
+			set(appKeys, "env", process.env["NODE_ENV"])
+		}
 
 		return appKeys
 	}
@@ -47,21 +67,20 @@ export function envLoader(opts: EnvLoaderOpts) {
 
 interface FileLoaderOpts {
 	readonly targetDir?: string
+	readonly configPath?: string
 }
 
-export function fileLoader(opts: FileLoaderOpts) {
-	const targetPath = path.join(
-		process.cwd(),
-		opts.targetDir || DEFAULT_CONFIG_DIR
-	)
-	if (!fs.existsSync(targetPath)) {
-		throw new Error(`Config directory not found: ${targetPath}`)
-	}
+export function fileLoader(opts: FileLoaderOpts | null = null): () => any {
+	const targetPath =
+		opts && opts.targetDir
+			? opts.targetDir
+			: path.join(process.cwd(), DEFAULT_CONFIG_DIR)
 
 	const cfgFiles = [
 		"default.application.json",
 		"application.json",
-		process.env["APPLICATION_CONFIG"] as string,
+		(opts && opts.configPath) ||
+			(process.env["APPLICATION_CONFIG"] as string),
 	].filter(Boolean)
 
 	return () =>
@@ -75,15 +94,15 @@ export function fileLoader(opts: FileLoaderOpts) {
 			.reduce((cfg, filepath) => {
 				const content = JSON.parse(fs.readFileSync(filepath).toString())
 
-				return Object.assign({}, cfg, content)
+				return merge(cfg, content)
 			}, {})
 }
 
 export type ConfigSchema<T> = JTDDataType<T>
 
-export function config<T extends AnySchema>(
+export function loadConfig<T extends AnySchema>(
 	schema: T,
-	opts: EnvLoaderOpts & FileLoaderOpts
+	opts: (EnvLoaderOpts & FileLoaderOpts) | null = null
 ): ConfigSchema<T> {
 	const conf = [fileLoader(opts), envLoader(opts)]
 		.map((loader) => loader())
