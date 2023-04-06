@@ -16,13 +16,13 @@ const TestConfig = {
 		fooBar: {
 			properties: {
 				foo: { type: "string" },
-				bar: { type: "boolean" }
-			}
-		}
+				bar: { type: "boolean" },
+			},
+		},
 	},
 	optionalProperties: {
-		env: { type: "string" }
-	}
+		env: { type: "string" },
+	},
 } as const
 
 test("envLoader", async (t) => {
@@ -35,7 +35,7 @@ test("envLoader", async (t) => {
 		fooBar: {
 			foo: "foo",
 			bar: false,
-		}
+		},
 	}
 
 	t.before(() => {
@@ -134,8 +134,8 @@ test("envLoader", async (t) => {
 
 		t.test("raises on invalid", async (t) => {
 			t.rejects(async () => loadConfig(TestConfig, { appName: "foo" })),
-			{},
-			"config validation error"
+				{},
+				"config validation error"
 		})
 	})
 })
