@@ -1,7 +1,7 @@
 {
 	"name": "@dumpstate/config",
-	"version": "0.2.0",
-	"description": "File/env configuration loader.",
+	"version": "0.2.1",
+	"description": "File and env configuration loader.",
 	"main": "lib/index.js",
 	"scripts": {
 		"build": "tsc --project tsconfig.json",
