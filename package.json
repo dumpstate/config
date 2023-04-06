@@ -1,8 +1,8 @@
 {
 	"name": "@dumpstate/config",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "File/env configuration loader.",
-	"main": "index.js",
+	"main": "lib/index.js",
 	"scripts": {
 		"build": "tsc --project tsconfig.json",
 		"build:test": "tsc --project test.tsconfig.json",
