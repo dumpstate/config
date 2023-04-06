@@ -5,7 +5,7 @@ import path from "path"
 
 import { test } from "tap"
 
-import { ConfigSchema, loadConfig, fileLoader } from "../src/index"
+import { ConfigSchemaType, loadConfig, fileLoader } from "../src/index"
 
 const TestConfig = {
 	optionalProperties: {
@@ -28,7 +28,7 @@ const TestConfig = {
 	},
 } as const
 
-type TestConfigSchema = ConfigSchema<typeof TestConfig>
+type TestConfigSchema = ConfigSchemaType<typeof TestConfig>
 
 const TEST_CONFIG = {
 	name: "app_name",

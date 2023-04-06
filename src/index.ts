@@ -98,12 +98,12 @@ export function fileLoader(opts: FileLoaderOpts | null = null): () => any {
 			}, {})
 }
 
-export type ConfigSchema<T> = JTDDataType<T>
+export type ConfigSchemaType<T> = JTDDataType<T>
 
 export function loadConfig<T extends AnySchema>(
 	schema: T,
 	opts: (EnvLoaderOpts & FileLoaderOpts) | null = null
-): ConfigSchema<T> {
+): ConfigSchemaType<T> {
 	const conf = [fileLoader(opts), envLoader(opts)]
 		.map((loader) => loader())
 		.reduce(merge, {})
@@ -117,5 +117,5 @@ export function loadConfig<T extends AnySchema>(
 		)
 	}
 
-	return Object.freeze(conf) as ConfigSchema<T>
+	return Object.freeze(conf) as ConfigSchemaType<T>
 }
