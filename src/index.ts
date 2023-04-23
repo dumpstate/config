@@ -57,10 +57,6 @@ export function envLoader(opts: EnvLoaderOpts | null = null): () => any {
 				)
 		}
 
-		if (process.env["NODE_ENV"]) {
-			set(appKeys, "env", process.env["NODE_ENV"])
-		}
-
 		return appKeys
 	}
 }

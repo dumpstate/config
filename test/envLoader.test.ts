@@ -104,7 +104,7 @@ test("envLoader", async (t) => {
 		})
 	})
 
-	t.test("should append NODE_ENV", async (t) => {
+	t.test("should not append NODE_ENV", async (t) => {
 		let initialEnv: string | undefined
 
 		t.before(() => {
@@ -120,10 +120,10 @@ test("envLoader", async (t) => {
 			}
 		})
 
-		t.test("appends env", async (t) => {
+		t.test("ignores env", async (t) => {
 			const cfg = loadConfig(TestConfig, { appName: "foo" })
 
-			t.equal(cfg.env, "development")
+			t.equal(cfg.env, undefined)
 		})
 	})
 
