@@ -11,6 +11,7 @@
 		"test": "mocha --require ts-node/register test/*.test.ts test/**/*.test.ts"
 	},
 	"author": "Albert Sadowski <asadowski@mailbox.org>",
+	"repository": "dumpstate/config",
 	"license": "MIT",
 	"devDependencies": {
 		"@types/lodash": "^4.14.195",
@@ -28,7 +29,7 @@
 		"lodash": "4.x"
 	},
 	"publishConfig": {
-		"registry": "https://npm.pkg.github.com/",
-		"access": "public"
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
 	}
 }
