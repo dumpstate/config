@@ -53,7 +53,7 @@ export function envLoader(opts: EnvLoaderOpts | null = null): () => any {
 				.reduce(
 					(acc, [key, value]) =>
 						set(acc, key as string, getValue(value)),
-					{}
+					{},
 				)
 		}
 
@@ -84,7 +84,7 @@ export function fileLoader(opts: FileLoaderOpts | null = null): () => any {
 			.map((filename) =>
 				path.isAbsolute(filename)
 					? filename
-					: path.join(targetPath, filename)
+					: path.join(targetPath, filename),
 			)
 			.filter((filepath) => fs.existsSync(filepath))
 			.reduce((cfg, filepath) => {
@@ -98,7 +98,7 @@ export type ConfigSchemaType<T> = JTDDataType<T>
 
 export function loadConfig<T extends AnySchema>(
 	schema: T,
-	opts: (EnvLoaderOpts & FileLoaderOpts) | null = null
+	opts: (EnvLoaderOpts & FileLoaderOpts) | null = null,
 ): ConfigSchemaType<T> {
 	const conf = [fileLoader(opts), envLoader(opts)]
 		.map((loader) => loader())
@@ -109,7 +109,7 @@ export function loadConfig<T extends AnySchema>(
 
 	if (!validate(conf)) {
 		throw new Error(
-			`config validation error: ${JSON.stringify(validate.errors)}`
+			`config validation error: ${JSON.stringify(validate.errors)}`,
 		)
 	}
 

@@ -1,9 +1,8 @@
 import { randomUUID } from "crypto"
 import fs from "fs"
+import assert from "node:assert/strict"
 import os from "os"
 import path from "path"
-
-import { test } from "tap"
 
 import { ConfigSchemaType, loadConfig, fileLoader } from "../src/index"
 
@@ -69,89 +68,89 @@ function rm(filepath: string) {
 	fs.rmdirSync(dir)
 }
 
-test("specific file only", async (t) => {
+describe("specific file only", () => {
 	let cfgPath: string
 
-	t.before(() => {
+	before(() => {
 		cfgPath = path.join(tmpdir(), randomUUID().toString())
 		fs.writeFileSync(cfgPath, JSON.stringify(TEST_CONFIG))
 
 		process.env["APPLICATION_CONFIG"] = cfgPath
 	})
 
-	t.teardown(() => {
+	after(() => {
 		rm(cfgPath)
 		delete process.env["APPLICATION_CONFIG"]
 	})
 
-	t.test("should load the config via specific loader", async (t) => {
+	it("should load the config via specific loader", async () => {
 		const cfg = fileLoader()()
 
-		t.match(cfg, TEST_CONFIG)
+		assert.deepEqual(cfg, TEST_CONFIG)
 	})
 
-	t.test("should load the config via aggregate loader", async (t) => {
+	it("should load the config via aggregate loader", async () => {
 		const cfg: TestConfigSchema = loadConfig(TestConfig)
 
-		t.match(cfg, TEST_CONFIG)
+		assert.deepEqual(cfg, TEST_CONFIG)
 	})
 })
 
-test("application.json only", async (t) => {
+describe("application.json only", async () => {
 	let cfgPath: string
 
-	t.before(() => {
+	before(() => {
 		cfgPath = path.join(tmpdir(), "application.json")
 		fs.writeFileSync(cfgPath, JSON.stringify(TEST_CONFIG))
 	})
 
-	t.teardown(() => rm(cfgPath))
+	after(() => rm(cfgPath))
 
-	t.test("should load the config via specific loader", async (t) => {
+	it("should load the config via specific loader", async () => {
 		const cfg = fileLoader({
 			targetDir: path.dirname(cfgPath),
 		})()
 
-		t.match(cfg, TEST_CONFIG)
+		assert.deepEqual(cfg, TEST_CONFIG)
 	})
 
-	t.test("should load the config via aggregate loader", async (t) => {
+	it("should load the config via aggregate loader", async () => {
 		const cfg: TestConfigSchema = loadConfig(TestConfig, {
 			targetDir: path.dirname(cfgPath),
 		})
 
-		t.match(cfg, TEST_CONFIG)
+		assert.deepEqual(cfg, TEST_CONFIG)
 	})
 })
 
-test("default.application.json only", async (t) => {
+describe("default.application.json only", async () => {
 	let cfgPath: string
 
-	t.before(() => {
+	before(() => {
 		cfgPath = path.join(tmpdir(), "default.application.json")
 		fs.writeFileSync(cfgPath, JSON.stringify(TEST_CONFIG))
 	})
 
-	t.teardown(() => rm(cfgPath))
+	after(() => rm(cfgPath))
 
-	t.test("should load the config via specific loader", async (t) => {
+	it("should load the config via specific loader", async () => {
 		const cfg = fileLoader({
 			targetDir: path.dirname(cfgPath),
 		})()
 
-		t.match(cfg, TEST_CONFIG)
+		assert.deepEqual(cfg, TEST_CONFIG)
 	})
 
-	t.test("should load the config via aggregate loader", async (t) => {
+	it("should load the config via aggregate loader", async () => {
 		const cfg: TestConfigSchema = loadConfig(TestConfig, {
 			targetDir: path.dirname(cfgPath),
 		})
 
-		t.match(cfg, TEST_CONFIG)
+		assert.deepEqual(cfg, TEST_CONFIG)
 	})
 })
 
-test("default.application.json along with application.json", async (t) => {
+describe("default.application.json along with application.json", async () => {
 	let targetDir: string
 	const expected = {
 		name: "app_name",
@@ -163,34 +162,34 @@ test("default.application.json along with application.json", async (t) => {
 		foo: [1, 2, 3],
 	}
 
-	t.before(() => {
+	before(() => {
 		targetDir = tmpdir()
 		fs.writeFileSync(
 			path.join(targetDir, "default.application.json"),
-			JSON.stringify(TEST_CONFIG)
+			JSON.stringify(TEST_CONFIG),
 		)
 		fs.writeFileSync(
 			path.join(targetDir, "application.json"),
-			JSON.stringify(TEST_CONFIG_2)
+			JSON.stringify(TEST_CONFIG_2),
 		)
 	})
 
-	t.teardown(() => rm(targetDir))
+	after(() => rm(targetDir))
 
-	t.test("should load the config via specific loader", async (t) => {
+	it("should load the config via specific loader", async () => {
 		const cfg = fileLoader({ targetDir })()
 
-		t.match(cfg, expected)
+		assert.deepEqual(cfg, expected)
 	})
 
-	t.test("should load the config via aggregate loader", async (t) => {
+	it("should load the config via aggregate loader", async () => {
 		const cfg: TestConfigSchema = loadConfig(TestConfig, { targetDir })
 
-		t.match(cfg, expected)
+		assert.deepEqual(cfg, expected)
 	})
 })
 
-test("all files", async (t) => {
+describe("all files", async () => {
 	let targetDir: string
 	let cfgPath: string
 
@@ -207,41 +206,41 @@ test("all files", async (t) => {
 		},
 	}
 
-	t.before(() => {
+	before(() => {
 		targetDir = tmpdir()
 		fs.writeFileSync(
 			path.join(targetDir, "default.application.json"),
-			JSON.stringify(TEST_CONFIG)
+			JSON.stringify(TEST_CONFIG),
 		)
 		fs.writeFileSync(
 			path.join(targetDir, "application.json"),
-			JSON.stringify(TEST_CONFIG_2)
+			JSON.stringify(TEST_CONFIG_2),
 		)
 
 		cfgPath = path.join(tmpdir(), randomUUID().toString())
 		fs.writeFileSync(cfgPath, JSON.stringify(TEST_CONFIG_3))
 	})
 
-	t.teardown(() => {
+	after(() => {
 		rm(targetDir)
 		rm(cfgPath)
 	})
 
-	t.test("should load the config via specific loader", async (t) => {
+	it("should load the config via specific loader", async () => {
 		const cfg = fileLoader({
 			targetDir,
 			configPath: cfgPath,
 		})()
 
-		t.match(cfg, expected)
+		assert.deepEqual(cfg, expected)
 	})
 
-	t.test("should load the config via aggregate loader", async (t) => {
+	it("should load the config via aggregate loader", async () => {
 		const cfg: TestConfigSchema = loadConfig(TestConfig, {
 			targetDir,
 			configPath: cfgPath,
 		})
 
-		t.match(cfg, expected)
+		assert.deepEqual(cfg, expected)
 	})
 })

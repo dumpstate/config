@@ -1,4 +1,4 @@
-import { test } from "tap"
+import assert from "node:assert/strict"
 
 import { envLoader, loadConfig } from "../src/index"
 
@@ -25,7 +25,7 @@ const TestConfig = {
 	},
 } as const
 
-test("envLoader", async (t) => {
+describe("envLoader", () => {
 	const expected = {
 		db: {
 			host: "localhost",
@@ -38,7 +38,7 @@ test("envLoader", async (t) => {
 		},
 	}
 
-	t.before(() => {
+	before(() => {
 		process.env["FOO__DB__HOST"] = "localhost"
 		process.env["FOO__DB__PORT"] = "5432"
 		process.env["FOO__DB__SSL"] = "true"
@@ -46,7 +46,7 @@ test("envLoader", async (t) => {
 		process.env["FOO__FOO_BAR__BAR"] = "false"
 	})
 
-	t.teardown(() => {
+	after(() => {
 		delete process.env["FOO__DB__HOST"]
 		delete process.env["FOO__DB__PORT"]
 		delete process.env["FOO__DB__SSL"]
@@ -54,28 +54,28 @@ test("envLoader", async (t) => {
 		delete process.env["FOO__FOO_BAR__BAR"]
 	})
 
-	t.test("loads empty object when no app name", async (t) => {
-		t.equal(Object.keys(envLoader()()).length, 0)
+	it("loads empty object when no app name", async () => {
+		assert.equal(Object.keys(envLoader()()).length, 0)
 	})
 
-	t.test("loads empty object when empty app name", async (t) => {
-		t.equal(Object.keys(envLoader({ appName: "" })()).length, 0)
+	it("loads empty object when empty app name", async () => {
+		assert.equal(Object.keys(envLoader({ appName: "" })()).length, 0)
 	})
 
-	t.test("loads config", async (t) => {
+	it("loads config", async () => {
 		const cfg = envLoader({ appName: "foo" })()
 
-		t.match(cfg, expected)
+		assert.deepEqual(cfg, expected)
 	})
 
-	t.test("loads config via aggregate loader", async (t) => {
+	it("loads config via aggregate loader", async () => {
 		const cfg = loadConfig(TestConfig, { appName: "foo" })
 
-		t.match(cfg, expected)
+		assert.deepEqual(cfg, expected)
 	})
 
-	t.test("loads config when name with hypen", async (t) => {
-		t.before(() => {
+	it("loads config when name with hypen", async () => {
+		before(() => {
 			process.env["FOO_BAR__DB__HOST"] = "localhost"
 			process.env["FOO_BAR__DB__PORT"] = "5432"
 			process.env["FOO_BAR__DB__SSL"] = "true"
@@ -83,7 +83,7 @@ test("envLoader", async (t) => {
 			process.env["FOO_BAR__FOO_BAR__BAR"] = "false"
 		})
 
-		t.teardown(() => {
+		after(() => {
 			delete process.env["FOO_BAR__DB__HOST"]
 			delete process.env["FOO_BAR__DB__PORT"]
 			delete process.env["FOO_BAR__DB__SSL"]
@@ -91,28 +91,28 @@ test("envLoader", async (t) => {
 			delete process.env["FOO_BAR__FOO_BAR__BAR"]
 		})
 
-		t.test("loads", async (t) => {
+		it("loads", async () => {
 			const cfg = envLoader({ appName: "foo-bar" })()
 
-			t.match(cfg, expected)
+			assert.deepEqual(cfg, expected)
 		})
 
-		t.test("loads via aggregate loader", async (t) => {
+		it("loads via aggregate loader", async () => {
 			const cfg = loadConfig(TestConfig, { appName: "foo-bar" })
 
-			t.match(cfg, expected)
+			assert.deepEqual(cfg, expected)
 		})
 	})
 
-	t.test("should not append NODE_ENV", async (t) => {
+	it("should not append NODE_ENV", async () => {
 		let initialEnv: string | undefined
 
-		t.before(() => {
+		before(() => {
 			initialEnv = process.env["NODE_ENV"]
 			process.env["NODE_ENV"] = "development"
 		})
 
-		t.teardown(() => {
+		after(() => {
 			if (initialEnv) {
 				process.env["NODE_ENV"] = initialEnv
 			} else {
@@ -120,20 +120,22 @@ test("envLoader", async (t) => {
 			}
 		})
 
-		t.test("ignores env", async (t) => {
+		it("ignores env", async () => {
 			const cfg = loadConfig(TestConfig, { appName: "foo" })
 
-			t.equal(cfg.env, undefined)
+			assert.equal(cfg.env, undefined)
 		})
 	})
 
-	t.test("raise validation error on invalid config", async (t) => {
-		t.before(() => {
+	it("raise validation error on invalid config", async () => {
+		before(() => {
 			process.env["FOO__DB__SSL"] = "foo"
 		})
 
-		t.test("raises on invalid", async (t) => {
-			t.rejects(async () => loadConfig(TestConfig, { appName: "foo" })),
+		it("raises on invalid", async () => {
+			assert.rejects(async () =>
+				loadConfig(TestConfig, { appName: "foo" }),
+			),
 				{},
 				"config validation error"
 		})
